@@ -18,8 +18,12 @@ const state = {
   user: null,
   categories: [],
   students: [],
-  matches: []
+  matches: [],
+  filteredStudents: []
 };
+
+// Ekip 6 — filtre kontrol nesnesi (initFilters sonrası atanır)
+let filterControls = null;
 
 const els = {
   app: document.getElementById("app"),
@@ -144,7 +148,7 @@ function subscribeStudents() {
 function subscribeMatches() {
   return onSnapshot(collection(db, "matches"), snap => {
     state.matches = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderStats();
+    refreshStats();
   });
 }
 
