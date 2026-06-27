@@ -1,3 +1,5 @@
+import { initFilters } from './components/filters.js';
+
 const { db, auth, firestore, authApi } = window.tetz;
 const {
   collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc,
@@ -9,8 +11,12 @@ const state = {
   user: null,
   categories: [],
   students: [],
-  matches: []
+  matches: [],
+  filteredStudents: []
 };
+
+// Ekip 6 — filtre kontrol nesnesi (initFilters sonrası atanır)
+let filterControls = null;
 
 const els = {
   app: document.getElementById("app"),
@@ -40,13 +46,47 @@ function renderStats() {
   `;
 }
 
+// ── Ekip 6: İstemci tarafı filtreleme (Firestore sorgusu ATILMAZ) ──
+function applyFilters(filters) {
+  const { ilgiAlanlari, sinif, arama } = filters;
+  const searchLower = arama.toLowerCase();
+
+  state.filteredStudents = state.students.filter(s => {
+    // Sınıf filtresi
+    if (sinif !== null && s.sinif !== sinif) return false;
+
+    // İlgi alanı filtresi (çoklu — hepsi eşleşmeli)
+    if (ilgiAlanlari.length > 0) {
+      const ogrenciAlanlari = s.ilgiAlanlari || [];
+      const hasMatch = ilgiAlanlari.some(id => ogrenciAlanlari.includes(id));
+      if (!hasMatch) return false;
+    }
+
+    // Metin arama (ad veya okul)
+    if (searchLower) {
+      const ad = (s.ad || s.isim || s.name || '').toLowerCase();
+      const okul = (s.okul || s.school || '').toLowerCase();
+      if (!ad.includes(searchLower) && !okul.includes(searchLower)) return false;
+    }
+
+    return true;
+  });
+
+  // Sayacı güncelle
+  if (filterControls) {
+    filterControls.setCount(state.filteredStudents.length);
+  }
+
+  // Ekip 4 entegrasyonu: cards.js varsa renderStudentList çağır
+  if (typeof window.renderStudentList === 'function') {
+    window.renderStudentList('student-list', state.filteredStudents);
+  }
+}
+
 function renderContent() {
   els.content.innerHTML = `
-    <section class="welcome">
-      <h2>Hoş geldin!</h2>
-      <p>İlgi alanlarına göre seni başka öğrencilerle eşleştireceğiz.</p>
-      <p class="muted">Kategori sayısı: ${state.categories.length}</p>
-    </section>
+    <div id="filter-container"></div>
+    <div id="student-list"></div>
   `;
 }
 
@@ -57,7 +97,12 @@ function renderMap() {
 function subscribeStudents() {
   return onSnapshot(collection(db, "students"), snap => {
     state.students = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    state.filteredStudents = [...state.students];
     renderStats();
+    // Filtre aktifse yeniden uygula
+    if (filterControls) {
+      filterControls.setCount(state.filteredStudents.length);
+    }
   });
 }
 
@@ -89,6 +134,9 @@ async function init() {
   renderMap();
   renderContent();
   renderStats();
+
+  // Ekip 6: Filtreleri başlat
+  filterControls = await initFilters('filter-container', applyFilters);
 }
 
 init();
