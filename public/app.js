@@ -1,4 +1,5 @@
 import { initFilters } from './components/filters.js';
+import { renderStats } from './components/stats.js';
 
 const { db, auth, firestore, authApi } = window.tetz;
 const {
@@ -35,15 +36,8 @@ async function loadCategories() {
   return res.json();
 }
 
-function renderStats() {
-  const total = state.students.length;
-  const approved = state.students.filter(s => s.onaylandi).length;
-  const matchCount = state.matches.length;
-  els.stats.innerHTML = `
-    <span><strong>${total}</strong> öğrenci</span>
-    <span><strong>${approved}</strong> onaylı</span>
-    <span><strong>${matchCount}</strong> eşleşme</span>
-  `;
+function refreshStats() {
+  renderStats("stats-bar");
 }
 
 // ── Ekip 6: İstemci tarafı filtreleme (Firestore sorgusu ATILMAZ) ──
@@ -98,7 +92,7 @@ function subscribeStudents() {
   return onSnapshot(collection(db, "students"), snap => {
     state.students = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     state.filteredStudents = [...state.students];
-    renderStats();
+    refreshStats();
     // Filtre aktifse yeniden uygula
     if (filterControls) {
       filterControls.setCount(state.filteredStudents.length);
@@ -109,7 +103,7 @@ function subscribeStudents() {
 function subscribeMatches() {
   return onSnapshot(collection(db, "matches"), snap => {
     state.matches = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderStats();
+    refreshStats();
   });
 }
 
@@ -133,7 +127,7 @@ async function init() {
 
   renderMap();
   renderContent();
-  renderStats();
+  refreshStats();
 
   // Ekip 6: Filtreleri başlat
   filterControls = await initFilters('filter-container', applyFilters);

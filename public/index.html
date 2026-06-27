@@ -9,17 +9,33 @@
 </head>
 <body>
   <div id="app">
-    <header id="app-header">
-      <h1>TETZ2026</h1>
-      <p class="tagline">İlgi alanlarına göre akıllı öğrenci eşleştirme</p>
-    </header>
+    <nav class="navbar" aria-label="Ana navigasyon">
+      <a href="#" class="navbar__logo">TETZ2026</a>
+      <ul class="navbar__links">
+        <li><a href="#hero">Ana Sayfa</a></li>
+        <li><a href="#stats-bar">İstatistikler</a></li>
+        <li><a href="#map-container">Harita</a></li>
+        <li><a href="#content-area">Öğrenciler</a></li>
+      </ul>
+    </nav>
 
-    <main>
+    <section id="hero" class="hero">
+      <div class="hero__content">
+        <p class="hero__eyebrow">Öğrenci Networking Platformu</p>
+        <h1 class="hero__title">İlgi alanlarına göre akıllı eşleştirme</h1>
+        <p class="hero__description">
+          TETZ2026 ile okulundaki öğrencileri keşfet, ortak ilgi alanlarına göre buluş
+          ve yeni bağlantılar kur.
+        </p>
+      </div>
+    </section>
+
+    <section id="stats-bar" class="stats-section" aria-label="Platform istatistikleri"></section>
+
+    <main class="main-content">
       <div id="map-container"></div>
       <div id="content-area"></div>
     </main>
-
-    <footer id="stats-bar"></footer>
   </div>
 
   <script type="module">
