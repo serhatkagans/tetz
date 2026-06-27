@@ -3,25 +3,62 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="TETZ2026 - Öğrencileri ilgi alanlarına göre akıllıca eşleştiren networking platformu" />
-  <title>TETZ2026 — Öğrenci Networking Platformu</title>
+  <meta name="description" content="TETZ2026 — Öğrencileri ilgi alanlarına göre bir araya getiren platform" />
+  <title>TETZ2026 — Öğrenci Eşleştirme</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
+  <!-- Ana uygulama kabı -->
   <div id="app">
-    <header id="app-header">
-      <h1>TETZ2026</h1>
-      <p class="tagline">İlgi alanlarına göre akıllı öğrenci eşleştirme</p>
+    <nav class="navbar" aria-label="Ana navigasyon">
+      <div class="navbar-inner">
+        <a class="navbar-brand" href="#">
+          <span class="brand-mark" aria-hidden="true">T</span>
+          <span class="brand-text">TETZ<span class="brand-accent">2026</span></span>
+        </a>
+        <ul class="navbar-links">
+          <li><a href="#oneriler">Önerilerim</a></li>
+          <li><a href="#bulusmalar">Buluşmalarım<span id="bildirim-alani"></span></a></li>
+          <li><a href="#profil">Profilim</a></li>
+          <li><a href="#moderasyon">Moderatör</a></li>
+          <li><a class="navbar-cta" href="#kayit">Kayıt Ol</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <header class="hero" id="app-header">
+      <div class="hero-inner">
+        <p class="hero-badge">Öğrenci Networking Platformu</p>
+        <h1 class="hero-title">TETZ2026</h1>
+        <p class="hero-lead">
+          İlgi alanlarına göre seni en uygun öğrencilerle eşleştiren akıllı networking deneyimi.
+        </p>
+        <p class="hero-desc">
+          Yapay zekadan robotiğe, ortak tutkularında yeni bağlantılar kur ve gerçek buluşmalar planla.
+        </p>
+        <a class="hero-cta" href="#kayit">Hemen Kayıt Ol</a>
+      </div>
     </header>
 
-    <main>
-      <div id="map-container"></div>
-      <div id="content-area"></div>
+    <main class="main-content">
+      <div id="map-container" aria-label="Harita alanı"></div>
+      <div id="content-area" aria-label="İçerik alanı"></div>
     </main>
 
-    <footer id="stats-bar"></footer>
+    <footer id="stats-bar" class="stats-section" aria-label="Platform istatistikleri">
+      <div class="stats-section-inner">
+        <h2 class="stats-heading">Canlı İstatistikler</h2>
+        <div id="stats-container" class="stats-grid"></div>
+      </div>
+    </footer>
   </div>
 
+  <!--
+    ADIM 1: Firebase bağlantısı
+    Bu blok veritabanı ve giriş işlemlerini hazırlar.
+    Diğer dosyalar window.tetz üzerinden erişir.
+  -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
@@ -33,6 +70,7 @@
       setDoc,
       addDoc,
       updateDoc,
+      deleteDoc,
       query,
       where,
       onSnapshot,
@@ -41,16 +79,18 @@
     import {
       getAuth,
       signInAnonymously,
+      signInWithEmailAndPassword,
+      signOut,
       onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
-    apiKey: "AIzaSyCWt9CdhaqQlH16XOyPLYDS_0I3KAYee24",
-authDomain: "tetz-3a211.firebaseapp.com",
-projectId: "tetz-3a211",
-storageBucket: "tetz-3a211.firebasestorage.app",
-messagingSenderId: "605910979481",
-appId: "1:605910979481:web:f6db8c68978ad91d977908"
+      apiKey: "AIzaSyCWt9CdhaqQlH16XOyPLYDS_0I3KAYee24",
+      authDomain: "tetz-3a211.firebaseapp.com",
+      projectId: "tetz-3a211",
+      storageBucket: "tetz-3a211.firebasestorage.app",
+      messagingSenderId: "605910979481",
+      appId: "1:605910979481:web:f6db8c68978ad91d977908"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -62,13 +102,15 @@ appId: "1:605910979481:web:f6db8c68978ad91d977908"
       db,
       auth,
       firestore: {
-        collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc,
+        collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc,
         query, where, onSnapshot, serverTimestamp
       },
-      authApi: { signInAnonymously, onAuthStateChanged }
+      authApi: { signInAnonymously, signInWithEmailAndPassword, signOut, onAuthStateChanged }
     };
   </script>
 
+  <!-- ADIM 2: Uygulama mantığı -->
   <script type="module" src="app.js"></script>
+
 </body>
 </html>
