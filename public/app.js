@@ -6,6 +6,8 @@ import { renderRegisterForm } from "./components/register.js";
 import { talepGonder, renderGelenTalepler } from "./components/meeting.js";
 import { renderProfile } from "./components/profile.js";
 import { initNotifications } from "./components/notification.js";
+import { initFilters } from "./components/filters.js";
+import { renderStudentList } from "./components/cards.js";
 
 const { db, auth, firestore, authApi } = window.tetz;
 const {
@@ -106,6 +108,49 @@ function renderContent() {
   }
 }
 
+// Keşfet: filtrelenebilir onaylı öğrenci listesi (ekip-6 filtreler + ekip-4 kartlar)
+async function renderKesfet() {
+  els.content.innerHTML = `
+    <section class="kesfet">
+      <h2>Öğrencileri Keşfet</h2>
+      <div id="filter-container"></div>
+      <div id="student-list"></div>
+    </section>
+  `;
+  try {
+    filterControls = await initFilters("filter-container", applyFilters);
+    applyFilters({ ilgiAlanlari: [], sinif: null, arama: "" });
+  } catch (err) {
+    console.error("Filtreler yüklenemedi:", err);
+  }
+}
+
+// İstemci tarafı filtreleme — yalnızca onaylı öğrenciler üzerinde çalışır
+function applyFilters(filters) {
+  const { ilgiAlanlari = [], sinif = null, arama = "" } = filters || {};
+  const searchLower = String(arama || "").toLowerCase();
+  const base = state.students.filter(s => s.onaylandi === true);
+
+  state.filteredStudents = base.filter(s => {
+    if (sinif !== null && String(s.sinif) !== String(sinif)) return false;
+    if (ilgiAlanlari.length > 0) {
+      const alan = s.ilgiAlanlari || [];
+      if (!ilgiAlanlari.some(id => alan.includes(id))) return false;
+    }
+    if (searchLower) {
+      const ad = (s.ad || s.isim || s.name || "").toLowerCase();
+      const okul = (s.okul || s.school || "").toLowerCase();
+      if (!ad.includes(searchLower) && !okul.includes(searchLower)) return false;
+    }
+    return true;
+  });
+
+  if (filterControls && typeof filterControls.setCount === "function") {
+    filterControls.setCount(state.filteredStudents.length);
+  }
+  renderStudentList("student-list", state.filteredStudents);
+}
+
 async function renderMap() {
   try {
     await FuarKatPlani("map-container");
@@ -148,7 +193,7 @@ function subscribeStudents() {
 function subscribeMatches() {
   return onSnapshot(collection(db, "matches"), snap => {
     state.matches = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    refreshStats();
+    renderStats();
   });
 }
 
@@ -181,6 +226,10 @@ function handleRoute() {
     case "#bulusmalar":
       if (ogrenciId) renderGelenTalepler("content-area", ogrenciId);
       else renderKayitGerekli("Buluşma taleplerini görmek için önce kayıt olmalısın.");
+      break;
+
+    case "#kesfet":
+      renderKesfet();
       break;
 
     case "#oneriler":
