@@ -1,4 +1,5 @@
 import { initFilters } from './components/filters.js';
+import { renderRegisterForm } from './components/register.js';
 
 const { db, auth, firestore, authApi } = window.tetz;
 const {
@@ -85,9 +86,11 @@ function applyFilters(filters) {
 
 function renderContent() {
   els.content.innerHTML = `
+    <div id="register-container"></div>
     <div id="filter-container"></div>
     <div id="student-list"></div>
   `;
+  renderRegisterForm('register-container');
 }
 
 function renderMap() {
